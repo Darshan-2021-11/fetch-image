@@ -16,7 +16,7 @@ to compile and run the program.
 
 The project fetches image from [here](pollination.ai) after a prompt is given, stores it in the very same directory after fetching the image.
 
-##NOTE: 
+## NOTE: 
 
 1. You need to have the image folder beforehand to store images in that directory... otherwise errors will show up when attempting to save the response.
 
