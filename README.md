@@ -5,7 +5,7 @@ Use any terminal and type
 ```
 git clone https://github.com/Darshan-2021-11/fetch-image
 make
-./makeImage
+./fetchImage
 ```
 to compile and run the program.
 
