@@ -86,7 +86,7 @@ int main()
 		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L); // Disable certificate verification
 
 		// Open file to save the response(with name of given prompt)
-		snprintf(path_to_save, sizeof path_to_save, "%s.jpg", tmp_prompt);
+		snprintf(path_to_save, sizeof path_to_save, "./images/%s.jpg", tmp_prompt);
 		printf("path_to_save: %s\n", path_to_save);
 
 		FILE *fp = fopen(path_to_save, "wb");
