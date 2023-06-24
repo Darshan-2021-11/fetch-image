@@ -4,11 +4,10 @@
 #include <curl/curl.h>
 
 #define MAX_PROMPT_LENGTH 512
-#define MAX_RELATIVE_PATH_LENGTH (MAX_PROMPT_LENGTH + 64)
-#define MAX_URL_LENGTH (MAX_PROMPT_LENGTH + 64)
+#define MAX_RELATIVE_PATH_LENGTH 576
+#define MAX_URL_LENGTH 576
 
 int close = 0;
-const char file_format[] = ".jpg";
 
 // Signal handler function
 void handle_signal(int signal)
@@ -58,7 +57,7 @@ int main()
 
 	char tmp_prompt[MAX_PROMPT_LENGTH];
 	char prompt[MAX_PROMPT_LENGTH];
-	char path_to_save[MAX_PROMPT_LENGTH];
+	char path_to_save[MAX_RELATIVE_PATH_LENGTH];
 	char url[MAX_URL_LENGTH];
 
 
@@ -79,7 +78,7 @@ int main()
 		remove_spaces(tmp_prompt, prompt);
 
 		// API GET request URL
-		snprintf(url, sizeof(url), "https://image.pollinations.ai/prompt/%s", prompt);
+		snprintf(url, sizeof url, "https://image.pollinations.ai/prompt/%s", prompt);
 		printf("Get request to url: %s\n", url);
 
 		// Set the URL with curl
@@ -87,8 +86,8 @@ int main()
 		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L); // Disable certificate verification
 
 		// Open file to save the response(with name of given prompt)
-		strcat(tmp_prompt, file_format);
-		strcat(path_to_save, tmp_prompt);
+		snprintf(path_to_save, sizeof path_to_save, "%s.jpg", tmp_prompt);
+		printf("path_to_save: %s\n", path_to_save);
 
 		FILE *fp = fopen(path_to_save, "wb");
 		if (fp == NULL) {
@@ -115,9 +114,13 @@ int main()
 			fgets(tmp_prompt, MAX_PROMPT_LENGTH, stdin);
 		}
 
-		// Cleanup libcurl
-		curl_easy_cleanup(curl);
+		// resetting the curl instance for reusing it
+		curl_easy_reset(curl);
+
 	}
+
+	// Cleanup libcurl
+	curl_easy_cleanup(curl);
 
 	// Cleanup libcurl global state
 	curl_global_cleanup();
