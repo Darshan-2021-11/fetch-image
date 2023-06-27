@@ -14,7 +14,7 @@ to compile and run the program.
 
 ## Description
 
-The project fetches image from [here](pollination.ai) after a prompt is given, stores it in the very same directory after fetching the image.
+The project fetches image from [here](www.pollination.ai) after a prompt is given, stores it in the very same directory after fetching the image.
 
 ## NOTE: 
 
