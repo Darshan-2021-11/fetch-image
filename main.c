@@ -161,7 +161,7 @@ int handle_file_and_process(CURL *curl, CURLcode res)
 	return 0;
 }
 
-void handle_mode(CURL *curl,	CURLcode res)
+int handle_mode(CURL *curl,	CURLcode res)
 {
 	switch (mode) {
 		case 1:	{
@@ -171,7 +171,7 @@ void handle_mode(CURL *curl,	CURLcode res)
 
 				snprintf(path_to_save, sizeof path_to_save, "./images/%s.jpg", tmp_prompt);
 
-				handle_file_and_process(curl, res);
+				if(handle_file_and_process(curl, res)) return 0;
 
 				// ask for prompt
 				printf("Enter a prompt (`Ctrl-C` to quit): ");
@@ -189,7 +189,7 @@ void handle_mode(CURL *curl,	CURLcode res)
 			snprintf(tmp_prompt_cpy, PROMPT_MAX_LENGTH + 15, "./images/%s", tmp_prompt);
 			// Remove newline character from tmp_prompt_cpy
 			tmp_prompt_cpy[strcspn(tmp_prompt_cpy, "\n")] = '\0';
-			handle_directory();
+			if(handle_directory()) return 1;
 
 			while(!close_loop) {
 				tmp_prompt_length = remove_spaces();
@@ -198,7 +198,7 @@ void handle_mode(CURL *curl,	CURLcode res)
 				snprintf(path_to_save, sizeof path_to_save, "%s/%s.jpg", tmp_prompt_cpy, tmp_prompt);
 				printf("path_to_save: %s\n", path_to_save);
 
-				handle_file_and_process(curl, res);
+				if(handle_file_and_process(curl, res)) return 1;
 
 				if(tmp_prompt_length + 1 > PROMPT_MAX_LENGTH) close_loop = 1;
 				else {
@@ -213,6 +213,7 @@ void handle_mode(CURL *curl,	CURLcode res)
 			break;
 		}
 	}
+	return 0;
 }
 
 int main()
