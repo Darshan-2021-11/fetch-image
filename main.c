@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <signal.h> // handles `ctrl-c` exit
-#include <limits.h> // useful for getting length of path
+// #include <limits.h> // useful for getting length of path
 #include <string.h>
 #include <curl/curl.h>
 
@@ -13,7 +13,7 @@
 	#include <sys/stat.h>
 	#include <dirent.h>
 	#define DIR_EXISTS(path) (opendir(path) != NULL)
-		#define CREATE_DIR(path) mkdir(path, 0777)
+	#define CREATE_DIR(path) mkdir(path, 0777)
 #else
 	#error "Unsupported platform"
 #endif
@@ -184,9 +184,10 @@ int handle_mode(CURL *curl,	CURLcode res)
 		}
 
 		case 2: {
-			tmp_prompt_cpy = malloc(PROMPT_MAX_LENGTH + 15);
+			int tmp_prompt_cpy_length = PROMPT_MAX_LENGTH + 64;
+			tmp_prompt_cpy = malloc(tmp_prompt_cpy_length);
 			strncpy(tmp_prompt_cpy, tmp_prompt, PROMPT_MAX_LENGTH);
-			snprintf(tmp_prompt_cpy, PROMPT_MAX_LENGTH + 15, "./images/%s", tmp_prompt);
+			snprintf(tmp_prompt_cpy, tmp_prompt_cpy_length, "./images/%s", tmp_prompt);
 			// Remove newline character from tmp_prompt_cpy
 			tmp_prompt_cpy[strcspn(tmp_prompt_cpy, "\n")] = '\0';
 			if(handle_directory()) return 1;
@@ -239,7 +240,7 @@ int main()
 	fgets(tmp_prompt, PROMPT_MAX_LENGTH, stdin);
 
 	// loop function
-	handle_mode(curl,	res);
+	handle_mode(curl, res);
 
 	// Cleanup libcurl
 	curl_easy_cleanup(curl);
