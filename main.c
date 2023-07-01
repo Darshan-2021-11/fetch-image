@@ -98,11 +98,11 @@ int remove_spaces()
 
 void handle_prompt_and_url(CURL *curl)
 {
-	printf("tmp_prompt: %s\n", tmp_prompt);
+	// printf("tmp_prompt: %s\n", tmp_prompt);
 
 	// API GET request URL
 	snprintf(url, sizeof url, "https://image.pollinations.ai/prompt/%s", prompt);
-	printf("Get request to url: %s\n", url);
+	// printf("Get request to url: %s\n", url);
 
 	// Set the URL with curl
 	curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -112,17 +112,17 @@ void handle_prompt_and_url(CURL *curl)
 int handle_directory()
 {
 	if (DIR_EXISTS(tmp_prompt_cpy)) {
-			printf("Directory already exists.\n");
+			printf("Directory: \"%s\" already exists.\n", tmp_prompt_cpy);
 			return 0;
 	} else {
 			// Create the directory
 			int result = CREATE_DIR(tmp_prompt_cpy);
 
 			if (result == 0) {
-					printf("Directory created successfully.\n");
+					printf("Directory: \"%s\" created successfully.\n", tmp_prompt_cpy);
 					return 0;
 			} else {
-					printf("Failed to create the directory.\n");
+					printf("Failed to create the directory: \"%s\".\n", tmp_prompt_cpy);
 					return 1;
 			}
 	}
@@ -132,13 +132,13 @@ int handle_file_and_process(CURL *curl, CURLcode res)
 {
 	struct stat buffer;
 	if (stat(path_to_save, &buffer) == 0) {
-		printf("File \"%s\" already exists!\n", path_to_save);
+		printf("File: \"%s\" already exists!\n", path_to_save);
 		return 0;
 	}
 	// printf("path_to_save: %s\n", path_to_save);
 	FILE *fp = fopen(path_to_save, "wb");
 	if (fp == NULL) {
-		printf("Error opening file.\n");
+		printf("Error opening file: \"%s\".\n", path_to_save);
 		return 1;
 	}
 
@@ -146,7 +146,7 @@ int handle_file_and_process(CURL *curl, CURLcode res)
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
 
 	// Perform the request
-	printf("Processing...\n");
+	printf("Processing your prompt request \"%s\"\n", tmp_prompt);
 	res = curl_easy_perform(curl);
 
 	if (res != CURLE_OK) {
@@ -197,7 +197,7 @@ int handle_mode(CURL *curl,	CURLcode res)
 				handle_prompt_and_url(curl);
 
 				snprintf(path_to_save, sizeof path_to_save, "%s/%s.jpg", tmp_prompt_cpy, tmp_prompt);
-				printf("path_to_save: %s\n", path_to_save);
+				printf("Image saved as: %s\n", path_to_save);
 
 				if(handle_file_and_process(curl, res)) return 1;
 
