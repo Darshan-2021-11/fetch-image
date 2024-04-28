@@ -1,5 +1,6 @@
-FLAGS =-Wall -Werror -Wextra -Wshadow -Wpedantic -I./include/
-LIBS =-L./lib/ -lcurl
+FLAGS =-Wall -Wextra -Wshadow -Wpedantic
+# -Werror
+LIBS =-lcurl
 
-fetchImage: main.c
-	CC -o $@ $< $(FLAGS) $(LIBS)
+fetch: main.c
+	gcc -o $@ $< $(FLAGS) $(LIBS)
