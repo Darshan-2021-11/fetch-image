@@ -22,49 +22,107 @@ FILE *fp;
 // Signal handler function
 void handle_signal(int signal)
 {
-  if (signal == SIGINT) {
-    fprintf(stderr, "Ctrl-C pressed. Terminating the program...\n");
-    exit(EXIT_SUCCESS);
-  }
+	if (signal == SIGINT) {
+		fprintf(stderr, "Ctrl-C pressed. Terminating the program...\n");
+		exit(EXIT_SUCCESS);
+	}
 }
 
+// custom implementation of getline function for windows
+#ifdef _WIN32
+size_t getline(char **lineptr, size_t *n, FILE *stream)
+{
+	char *bufptr = NULL;
+	char *p = bufptr;
+	size_t size;
+	int c;
+
+	if (lineptr == NULL || stream == NULL || n == NULL)
+	{
+		return -1;
+	}
+	bufptr = *lineptr;
+	size = *n;
+
+	c = fgetc(stream);
+	if (c == EOF)
+	{
+		return -1;
+	}
+	if (bufptr == NULL)
+	{
+		bufptr = malloc(128);
+		if (bufptr == NULL)
+		{
+			return -1;
+		}
+		size = 128;
+	}
+	p = bufptr;
+	while (c != EOF)
+	{
+		if ((p - bufptr) > (size - 1))
+		{
+			size = size + 128;
+			bufptr = realloc(bufptr, size);
+			if (bufptr == NULL)
+			{
+				return -1;
+			}
+			p = bufptr + (size - 128);
+		}
+		*p++ = c;
+		if (c == '\n')
+		{
+			break;
+		}
+		c = fgetc(stream);
+	}
+
+	*p++ = '\0';
+	*lineptr = bufptr;
+	*n = size;
+
+	return p - bufptr - 1;
+}
+#endif
 
 int main(int argc, char ** argv)
 {
-  image = url = encoded_prompt = prompt = NULL;
+	image = url = encoded_prompt = prompt = NULL;
 
-  // register the signal handler
-  signal(SIGINT, handle_signal);
+	// register the signal handler
+	signal(SIGINT, handle_signal);
 
-  // initialize libcurl
-  curl_global_init(CURL_GLOBAL_DEFAULT);
-  curl = curl_easy_init();
+	// initialize libcurl
+	curl_global_init(CURL_GLOBAL_DEFAULT);
+	curl = curl_easy_init();
 
-  if (!curl) {
-    fprintf(stderr, "ERROR: Curl initialization failed!\n");
-    exit(CURL_INIT_FAILED);
-  }
+	if (!curl) {
+		fprintf(stderr, "ERROR: Curl initialization failed!\n");
+		exit(CURL_INIT_FAILED);
+	}
 
-  // taking user's image prompt
-  printf("Enter a prompt (`Ctrl-C` to quit): ");
-  getline(&prompt, &prompt_length, stdin);
+	// taking user's image prompt
+	printf("Enter a prompt (`Ctrl-C` to quit): ");
+	getline(&prompt, &prompt_length, stdin);
 
-  // remove the newline character from the input's end
-  prompt[strcspn(prompt, "\n")] = '\0';
-  printf("Entered prompt: %s\n", prompt);
+	// remove the newline character from the input's end
+	prompt[strcspn(prompt, "\n")] = '\0';
+	printf("Entered prompt: %s\n", prompt);
 
-  // encode prompt for url request
-  if (!(encoded_prompt = curl_easy_escape(curl, prompt, 0))) {
-    fprintf(stderr, "ERROR: curl_easy_escape failed!\n");
-    curl_easy_cleanup(curl);
-    exit(CURL_EASY_ESCAPE_FAILED);
-  }
-  // create url request
-  if (asprintf(&url, url_format, encoded_prompt) == -1) {
-    fprintf(stderr, "ERROR: asprintf failed!\n");
-    curl_easy_cleanup(curl);
-    exit(ASPRINTF_FAILED);
-  }
+	// encode prompt for url request
+	if (!(encoded_prompt = curl_easy_escape(curl, prompt, 0))) {
+		fprintf(stderr, "ERROR: curl_easy_escape failed!\n");
+		curl_easy_cleanup(curl);
+		exit(CURL_EASY_ESCAPE_FAILED);
+	}
+	// create url request
+	if (asprintf(&url, url_format, encoded_prompt) == -1) {
+		fprintf(stderr, "ERROR: asprintf failed!\n");
+		curl_easy_cleanup(curl);
+		exit(ASPRINTF_FAILED);
+	}
   // free dynamically allocated memory
   curl_free(encoded_prompt);
   curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -87,9 +145,10 @@ int main(int argc, char ** argv)
 
   // Set the file as the output for libcurl
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+  // Set SSL_VERIFICATION to false
+  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
 
   // Perform the request
-  printf("Requesting Pollinations.ai for \"%s\"\n", prompt);
   res = curl_easy_perform(curl);
   if (res != CURLE_OK) {
     fprintf(stderr, "Failed to fetch image: %s\n", curl_easy_strerror(res));
